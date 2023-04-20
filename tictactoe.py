@@ -142,42 +142,43 @@ def minimax(board):
     Returns the optimal action for the current player on the board.
     """
     spieler = player(board)
+    opponent = {"X":O,"O":X}
     if terminal(board):
         return None
-    c_board = board.copy()
+    c_board = copy.deepcopy(board)
     tree = []
-    parent = {"Board":c_board,"Move":None,"Parent":None, "Utility":utility(c_board)}
+    superparent = {"Board":c_board,"Move":None,"Parent":None, "Utility":utility(c_board)}
+    parent = copy.deepcopy(superparent)
     now = copy.deepcopy(c_board)
-    while terminal(now) == False:
-        if not terminal(now):         
-            options = actions(now)
-            tree_level = []
-            for option in list(options):
-                resultat = result(now, option)
-                node = {"Board":result,"Move":option,"Parent":parent, "Utility":utility(resultat)}
-                tree_level.append(node)
-            now = resultat
-            tree.append(tree_level)
+    while winner(now) != opponent[spieler]:        
+        tree_level = []
+        options = actions(now)
+        for option in list(options):
+            resultat = result(now, option)
+            node = {"Board":result,"Move":option,"Parent":parent, "Utility":utility(resultat)}
+            tree_level.append(node)
+        tree.extend(tree_level)
+        parent = tree.pop(0)
+        now = parent["Board"]
     if spieler == X:
-        for node in tree[-1]:
-            if node["Utility"] == 1: 
-                while node["Parent"] is not None:
+        for node in reversed(tree):
+            if node["Utility"] == 1:
+                while node["Parent"] != superparent:
                     node = node["Parent"]
                 return node["Move"]
-        for node in tree[-1]:
-            if node["Utility"] == 0: 
-                while node["Parent"] is not None:
-                    node = node["Parent"]
-                return node["Move"]
-        
+        for node in reversed(tree):
+            if node["Utility"] == 0:
+                while node["Parent"] != superparent:
+                    node = node["Parent"] 
+                return node["Move"]    
     elif spieler == O:
-        for node in tree[-1]:
+        for node in reversed(tree):
             if node["Utility"] == -1: 
-                while node["Parent"] is not None:
+                while node["Parent"] != superparent:
                     node = node["Parent"]
                 return node["Move"]
-    for node in tree[-1]:
-            if node["Utility"] == 0: 
-                while node["Parent"] is not None:
-                    node = node["Parent"]
+    for node in reversed(tree):
+            if node["Utility"] == 0:
+                while node["Parent"] != superparent:
+                    node = node["Parent"] 
                 return node["Move"]
