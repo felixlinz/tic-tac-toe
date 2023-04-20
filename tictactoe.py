@@ -1,6 +1,9 @@
 """
 Tic Tac Toe Player
 """
+"""
+Tic Tac Toe Player
+"""
 import copy
 import math
 
@@ -45,8 +48,6 @@ def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
     """
-    if terminal(board):
-        return False
     possible_moves = set()
     for i, line in enumerate(board):
         for e, cell in enumerate(line):
@@ -54,8 +55,8 @@ def actions(board):
                 move = (i,e)
                 possible_moves.add(move)
     if possible_moves:
-        print(possible_moves)
         return possible_moves
+    return "banana"
 
 
 def result(board, action):
@@ -68,7 +69,6 @@ def result(board, action):
         operator = player(board)
         if not winner(board):
             fuckaround[x][y] = operator
-        print(fuckaround)
         return fuckaround
     except TypeError:
         raise Exception("not a valid move")
@@ -78,34 +78,19 @@ def winner(board):
     Returns the winner of the game, if there is one.
     """
     for row in board:
-        checker = [row[0]]
-        for cell in row:
-            if cell == checker[0]:
-                checker.append(cell)
-        if len(checker) == 4:
-            return checker[0]
+        checker = row[0]
+        if row[1] == checker and row[2] == checker:
+            return checker
     for i in range(3):
-        checker = [row[i]]
-        for row in board:
-            if row[i] == checker[0]:
-                checker.append(row[i])
-        if len(checker) == 4:
-            return checker[0]
-    checker = [board[0][0]]
-    for i, row in enumerate(board[1:]):
-        if row[i] == checker[0]:
-            checker.append(row[i])
-    if len(checker) == 3:
-            return checker[0]
-    position = 2
-    checker = [board[0][position]]
-    for row in board:
-        position -= 1
-        if row[position] == checker[0]:
-            checker.append(row[position])
-            checker.append(row[position])
-    if len(checker) == 4:
-        return checker[0]
+        checker = board[0][i]
+        if board[1][i] == checker and board[2][i] == checker:
+            return checker
+    checker = board[0][0]
+    if board[1][1] == checker and board[2][2] == checker:
+        return checker
+    checker = board[0][2]
+    if board[1][1]==checker and board[2][0] == checker:
+        return checker
     return None
 
 
@@ -115,13 +100,8 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    if winner(board):
+    if len(list(actions(board))) == 0:
         return True
-    i = 0
-    for row in board:
-        for cell in row:
-            if cell not in [X,O]:
-                i += 1
     return False
 
 
@@ -133,7 +113,6 @@ def utility(board):
         return 0
     rules = {"X":1, "O":-1}
     result = winner(board)
-    print(rules[result])
     return rules[result]
 
 
@@ -142,42 +121,46 @@ def minimax(board):
     Returns the optimal action for the current player on the board.
     """
     spieler = player(board)
+    opponent = {"X":O,"O":X}
     if terminal(board):
         return None
-    c_board = board.copy()
+    c_board = copy.deepcopy(board)
     tree = []
-    parent = {"Board":c_board,"Move":None,"Parent":None, "Utility":utility(c_board)}
+    superparent = {"Board":c_board,"Move":None,"Parent":None, "Utility":utility(c_board)}
+    parent = copy.deepcopy(superparent)
     now = copy.deepcopy(c_board)
-    while terminal(now) == False:
-        if not terminal(now):         
+    while winner(now) != opponent[spieler]:        
+        tree_level = []
+        if actions(now):
             options = actions(now)
-            tree_level = []
-            for option in list(options):
-                resultat = result(now, option)
-                node = {"Board":result,"Move":option,"Parent":parent, "Utility":utility(resultat)}
-                tree_level.append(node)
-            now = resultat
-            tree.append(tree_level)
+        else:
+            break
+        for option in list(options):
+            resultat = result(now, option)
+            node = {"Board":resultat,"Move":option,"Parent":parent, "Utility":utility(resultat)}
+            tree_level.append(node)
+        tree.extend(tree_level)
+        parent = tree.pop(0)
+        now = parent["Board"]
     if spieler == X:
-        for node in tree[-1]:
-            if node["Utility"] == 1: 
-                while node["Parent"] is not None:
+        for node in reversed(tree):
+            if node["Utility"] == 1:
+                while node["Parent"] != superparent:
                     node = node["Parent"]
                 return node["Move"]
-        for node in tree[-1]:
-            if node["Utility"] == 0: 
-                while node["Parent"] is not None:
-                    node = node["Parent"]
-                return node["Move"]
-        
+        for node in reversed(tree):
+            if node["Utility"] == 0:
+                while node["Parent"] != superparent:
+                    node = node["Parent"] 
+                return node["Move"]    
     elif spieler == O:
-        for node in tree[-1]:
+        for node in reversed(tree):
             if node["Utility"] == -1: 
-                while node["Parent"] is not None:
+                while node["Parent"] != superparent:
                     node = node["Parent"]
                 return node["Move"]
-    for node in tree[-1]:
-            if node["Utility"] == 0: 
-                while node["Parent"] is not None:
-                    node = node["Parent"]
+        for node in reversed(tree):
+            if node["Utility"] == 0:
+                while node["Parent"] != superparent:
+                    node = node["Parent"] 
                 return node["Move"]
