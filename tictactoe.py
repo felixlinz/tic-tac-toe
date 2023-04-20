@@ -56,7 +56,7 @@ def actions(board):
                 possible_moves.add(move)
     if possible_moves:
         return possible_moves
-    return "banana"
+    return None
 
 
 def result(board, action):
@@ -67,8 +67,7 @@ def result(board, action):
         fuckaround = copy.deepcopy(board)
         x,y = action
         operator = player(board)
-        if not winner(board):
-            fuckaround[x][y] = operator
+        fuckaround[x][y] = operator
         return fuckaround
     except TypeError:
         raise Exception("not a valid move")
@@ -94,14 +93,16 @@ def winner(board):
     return None
 
 
-
-
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
     if len(list(actions(board))) == 0:
+        print("hi")
         return True
+    elif winner(board):
+        return True
+        print("hi")
     return False
 
 
