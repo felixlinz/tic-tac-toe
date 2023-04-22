@@ -186,7 +186,6 @@ class Node:
         depth = 0
         nextround = []
         while len(children) != 0:
-            print("Children: ", len(children))
             depth += 1
             for child in children:
                 if len(child.children) == 0:
