@@ -139,14 +139,13 @@ class TicTacTree:
         while len(self.now) != 0:
             level = self.now.pop(0)
             moves = actions(level.board)
-            nodelevel = []
             if moves != None:
                 for move in moves:
                     moved_board = result(level.board, move)
                     node = Node(moved_board, move)
                     self.now.append(node)
-                    nodelevel.append(node)
-            level.children.extend(nodelevel)
+                    level.children.append(node)
+
 
 
 class Node:
@@ -155,6 +154,7 @@ class Node:
         self.move = move
         self.children = []
         self.allchildren = []
+        self.grandchildren = []
         self.wins = []
         self.losses = []
         self.player = player(self.board)
@@ -167,8 +167,8 @@ class Node:
         self.children.append(node)
 
     def quality(self):
-        grandchildren = self.grandchildren()
-        for child, depth in grandchildren:
+        self.these_grandchildren()
+        for child, depth in self.grandchildren:
             if child.utility == self.target[self.player]:
                 self.wins.append((child ,depth))
             elif child.utility == self.target[self.opponent[self.player]]:
@@ -180,22 +180,19 @@ class Node:
             intital_value = intital_value - (depth)
         return intital_value
     
-    def grandchildren(self):
-        print(self.move)
-        grandchildren = []
+    def these_grandchildren(self):
         self.allchildren.extend(self.children)
         depth = 0
         while len(self.allchildren) > 0:
-            print(self.allchildren[0].board)
             depth += 1
             for child in self.allchildren:
                 if len(child.children) == 0:
                     self.allchildren.remove(child)
-                    grandchildren.append((child, depth))
+                    self.grandchildren.append((child, depth))
                 else:
                     self.allchildren.remove(child)
                     self.allchildren.extend(child.children)
-        return grandchildren
+
 
                 
             
