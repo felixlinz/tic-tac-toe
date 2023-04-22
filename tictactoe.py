@@ -123,9 +123,9 @@ def minimax(board):
     candidate.value = -100000
     TicTacTree(candidate)
     for node in candidate.children:
-        if node.quality() > candidate.value:
+        if (value := node.quality()) > candidate.value:
             candidate = node
-            candidate.value = candidate.quality()
+            candidate.value = value
     return candidate.move
 
 
@@ -139,14 +139,14 @@ class TicTacTree:
         while len(self.now) != 0:
             level = self.now.pop(0)
             moves = actions(level.board)
-            tree = []
+            nodelevel = []
             if moves != None:
                 for move in moves:
                     moved_board = result(level.board, move)
                     node = Node(moved_board, move)
                     self.now.append(node)
-                    level.addchild(node)
-        return tree
+                    nodelevel.append(node)
+            level.children.extend(nodelevel)
 
 
 class Node:
@@ -154,6 +154,7 @@ class Node:
         self.board = board
         self.move = move
         self.children = []
+        self.allchildren = []
         self.wins = []
         self.losses = []
         self.player = player(self.board)
@@ -161,7 +162,6 @@ class Node:
         self.target = {X:1, O:-1}
         self.opponent = {X:O, O:X}
         self.value = -100000
-
 
     def addchild(self, node):
         self.children.append(node)
@@ -181,21 +181,20 @@ class Node:
         return intital_value
     
     def grandchildren(self):
+        print(self.move)
         grandchildren = []
-        children = self.children
+        self.allchildren.extend(self.children)
         depth = 0
-        nextround = []
-        while len(children) != 0:
+        while len(self.allchildren) > 0:
+            print(self.allchildren[0].board)
             depth += 1
-            for child in children:
+            for child in self.allchildren:
                 if len(child.children) == 0:
+                    self.allchildren.remove(child)
                     grandchildren.append((child, depth))
-                    children.remove(child)
                 else:
-                    nextround.extend(child.children)
-                    children.remove(child)
-            children = nextround
-        print("Depth: ", depth)
+                    self.allchildren.remove(child)
+                    self.allchildren.extend(child.children)
         return grandchildren
 
                 
