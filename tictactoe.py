@@ -98,7 +98,6 @@ def terminal(board):
     Returns True if game is over, False otherwise.
     """
     if len(list(actions(board))) == 0:
-        print("hi")
         return True
     elif winner(board):
         return True
@@ -123,21 +122,18 @@ def minimax(board):
     candidate = Node(board)
     candidate.value = -100000
     TicTacTree(candidate)
-    print(len(candidate.children))
     for node in candidate.children:
         if node.quality() > candidate.value:
             candidate = node
             candidate.value = candidate.quality()
-    print(candidate.value)
     return candidate.move
-
 
 
 
 class TicTacTree:
     def __init__(self, node):
         self.now = [node]
-        self.tree = self.treebuilder()
+        self.treebuilder()
     
     def treebuilder(self):
         while len(self.now) != 0:
@@ -149,7 +145,6 @@ class TicTacTree:
                     moved_board = result(level.board, move)
                     node = Node(moved_board, move)
                     self.now.append(node)
-                    tree.append(node)
                     level.addchild(node)
         return tree
 
@@ -188,10 +183,11 @@ class Node:
     def grandchildren(self):
         grandchildren = []
         children = self.children
-        depth = 10
+        depth = 0
         nextround = []
         while len(children) != 0:
-            depth -= 1
+            print("Children: ", len(children))
+            depth += 1
             for child in children:
                 if len(child.children) == 0:
                     grandchildren.append((child, depth))
@@ -200,7 +196,7 @@ class Node:
                     nextround.extend(child.children)
                     children.remove(child)
             children = nextround
-        print(depth)
+        print("Depth: ", depth)
         return grandchildren
 
                 
