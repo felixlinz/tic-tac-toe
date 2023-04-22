@@ -102,7 +102,6 @@ def terminal(board):
         return True
     elif winner(board):
         return True
-        print("hi")
     return False
 
 
@@ -121,47 +120,90 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    spieler = player(board)
-    opponent = {"X":O,"O":X}
-    if terminal(board):
-        return None
-    c_board = copy.deepcopy(board)
-    tree = []
-    superparent = {"Board":c_board,"Move":None,"Parent":None, "Utility":utility(c_board)}
-    parent = copy.deepcopy(superparent)
-    now = copy.deepcopy(c_board)
-    while winner(now) != opponent[spieler]:        
-        tree_level = []
-        if actions(now):
-            options = actions(now)
-        else:
-            break
-        for option in list(options):
-            resultat = result(now, option)
-            node = {"Board":resultat,"Move":option,"Parent":parent, "Utility":utility(resultat)}
-            tree_level.append(node)
-        tree.extend(tree_level)
-        parent = tree.pop(0)
-        now = parent["Board"]
-    if spieler == X:
-        for node in reversed(tree):
-            if node["Utility"] == 1:
-                while node["Parent"] != superparent:
-                    node = node["Parent"]
-                return node["Move"]
-        for node in reversed(tree):
-            if node["Utility"] == 0:
-                while node["Parent"] != superparent:
-                    node = node["Parent"] 
-                return node["Move"]    
-    elif spieler == O:
-        for node in reversed(tree):
-            if node["Utility"] == -1: 
-                while node["Parent"] != superparent:
-                    node = node["Parent"]
-                return node["Move"]
-        for node in reversed(tree):
-            if node["Utility"] == 0:
-                while node["Parent"] != superparent:
-                    node = node["Parent"] 
-                return node["Move"]
+    candidate = Node(board)
+    candidate.value = -100000
+    TicTacTree(candidate)
+    print(len(candidate.children))
+    for node in candidate.children:
+        if node.quality() > candidate.value:
+            candidate = node
+            candidate.value = candidate.quality()
+    print(candidate.value)
+    return candidate.move
+
+
+
+
+class TicTacTree:
+    def __init__(self, node):
+        self.now = [node]
+        self.tree = self.treebuilder()
+    
+    def treebuilder(self):
+        while len(self.now) != 0:
+            level = self.now.pop(0)
+            moves = actions(level.board)
+            tree = []
+            if moves != None:
+                for move in moves:
+                    moved_board = result(level.board, move)
+                    node = Node(moved_board, move)
+                    self.now.append(node)
+                    tree.append(node)
+                    level.addchild(node)
+        return tree
+
+
+class Node:
+    def __init__(self, board, move = None):
+        self.board = board
+        self.move = move
+        self.children = []
+        self.wins = []
+        self.losses = []
+        self.player = player(self.board)
+        self.utility = utility(self.board)
+        self.target = {X:1, O:-1}
+        self.opponent = {X:O, O:X}
+        self.value = -100000
+
+
+    def addchild(self, node):
+        self.children.append(node)
+
+    def quality(self):
+        grandchildren = self.grandchildren()
+        for child, depth in grandchildren:
+            if child.utility == self.target[self.player]:
+                self.wins.append((child ,depth))
+            elif child.utility == self.target[self.opponent[self.player]]:
+                self.losses.append((child, depth))
+        intital_value = 0
+        for child, depth in self.wins:
+            intital_value = intital_value + (10-depth)
+        for child, depth in self.losses:
+            intital_value = intital_value - (depth)
+        return intital_value
+    
+    def grandchildren(self):
+        grandchildren = []
+        children = self.children
+        depth = 10
+        nextround = []
+        while len(children) != 0:
+            depth -= 1
+            for child in children:
+                if len(child.children) == 0:
+                    grandchildren.append((child, depth))
+                    children.remove(child)
+                else:
+                    nextround.extend(child.children)
+                    children.remove(child)
+            children = nextround
+        print(depth)
+        return grandchildren
+
+                
+            
+
+
