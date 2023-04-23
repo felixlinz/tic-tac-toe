@@ -28,6 +28,8 @@ def player(board):
     x = 0
     o = 0
     other = 0
+    if terminal(board):
+        return None
     for line in board:
         for cell in line:
             if cell == X:
@@ -54,9 +56,7 @@ def actions(board):
             if cell != X and cell != O:
                 move = (i,e)
                 possible_moves.add(move)
-    if possible_moves:
-        return possible_moves
-    return None
+    return possible_moves
 
 
 def result(board, action):
@@ -108,7 +108,7 @@ def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    if not winner(board):
+    if winner(board) == None:
         return 0
     rules = {"X":1, "O":-1}
     result = winner(board)
@@ -119,6 +119,8 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
+    if len(actions(board)) == 9:
+        return (1,1)
     candidate = Node(board)
     candidate.value = -100000
     TicTacTree(candidate)
@@ -129,27 +131,27 @@ def minimax(board):
     return candidate.move
 
 
-
 class TicTacTree:
     def __init__(self, node):
         self.now = [node]
+        self.qualitytree = []
         self.treebuilder()
     
     def treebuilder(self):
         while len(self.now) != 0:
-            level = self.now.pop(0)
-            moves = actions(level.board)
-            if moves != None:
+            parent = self.now.pop(0)
+            moves = actions(parent.board)
+            if moves:
                 for move in moves:
-                    moved_board = result(level.board, move)
-                    node = Node(moved_board, move)
+                    node = Node(result(parent.board, move), move)
                     self.now.append(node)
-                    level.children.append(node)
-
-
+                    self.qualitytree.append(node)
+                    parent.children.append(node)
+                
 
 class Node:
     def __init__(self, board, move = None):
+        self.terminal = terminal(board)
         self.board = board
         self.move = move
         self.children = []
@@ -168,16 +170,21 @@ class Node:
 
     def quality(self):
         self.these_grandchildren()
-        for child, depth in self.grandchildren:
-            if child.utility == self.target[self.player]:
-                self.wins.append((child ,depth))
-            elif child.utility == self.target[self.opponent[self.player]]:
-                self.losses.append((child, depth))
         intital_value = 0
-        for child, depth in self.wins:
-            intital_value = intital_value + (10-depth)
+        maxdepth = 0
+        mindepth = 100
         for child, depth in self.losses:
-            intital_value = intital_value - (depth)
+            if depth > maxdepth:
+                maxdepth = depth
+            elif depth < mindepth:
+                mindepth = depth
+        for child, depth in self.wins:
+            intital_value = intital_value + int(maxdepth/depth)
+        for child, depth in self.losses:
+            intital_value = intital_value - int(math.pow((maxdepth/depth), 2))
+        print("wins", len(self.wins))
+        print("losses", len(self.losses))
+        print("value", intital_value, "depth", mindepth, maxdepth)
         return intital_value
     
     def these_grandchildren(self):
@@ -186,12 +193,16 @@ class Node:
         while len(self.allchildren) > 0:
             depth += 1
             for child in self.allchildren:
-                if len(child.children) == 0:
+                if child.utility == self.target[self.player]:
                     self.allchildren.remove(child)
-                    self.grandchildren.append((child, depth))
+                    self.wins.append((child, depth))
+                elif child.utility == self.target[self.opponent[self.player]]:
+                    self.allchildren.remove(child)
+                    self.losses.append((child, depth))
+                elif child.terminal == True:
+                    self.allchildren.remove(child)
                 else:
-                    self.allchildren.remove(child)
-                    self.allchildren.extend(child.children)
+                    self.allchildren.extend(child.chhildren)
 
 
                 
