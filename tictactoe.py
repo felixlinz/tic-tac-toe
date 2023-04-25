@@ -164,17 +164,19 @@ class Node:
     def quality(self):  
         value = 0
         if self.utility == self.target[self.player]:
-            value += 100000
-        for solution, depth in self.wins:
-            value = value + int(10/depth)*int(10/depth)
+            value += 10000
+        for _, depth in self.wins:
+            value = value + int(math.pow((10/depth)*5, 4))
             if depth == 2: 
                 value += 100
-        for solution, depth in self.losses:
-            value = value - int(10/depth)*int(10/depth)
+        for _, depth in self.losses:
+            value = value - int(math.pow((10/depth)*5, 4))
+            """
             if depth == 1: 
                 value = value - 10000
             elif depth == 3: 
                 value = value - 5000
+            """
         """
         for loss, depth in self.losses:
             if depth < 3:
