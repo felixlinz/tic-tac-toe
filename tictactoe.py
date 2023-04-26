@@ -7,6 +7,7 @@ import math
 X = "X"
 O = "O"
 EMPTY = None
+lastnode = []
 
 
 def initial_state():
@@ -107,16 +108,19 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    if len(actions(board)) == 9:
-        return (1,1)
-    elif len(actions(board)) == 1:
+    if len(actions(board)) == 1:
         return (actions(board)).pop()
+    elif len(actions(board)) == 9:
+        return (0,0)
     dad = Node(board)
     candidates = [dad.children[0]]
     for child in dad.children:
         child.these_grandchildren()
+        print(child.quality())
         if child.quality() > candidates[-1].quality():
             candidates.append(child)
+    lastnode.append(child)
+    print(candidates[-1].quality(), candidates[-1].move)
     return candidates[-1].move
 
     
@@ -167,21 +171,8 @@ class Node:
             value += 10000
         for _, depth in self.wins:
             value = value + int(math.pow((10/depth)*5, 4))
-            if depth == 2: 
-                value += 100
         for _, depth in self.losses:
             value = value - int(math.pow((10/depth)*5, 4))
-            """
-            if depth == 1: 
-                value = value - 10000
-            elif depth == 3: 
-                value = value - 5000
-            """
-        """
-        for loss, depth in self.losses:
-            if depth < 3:
-                win = win - 20000
-        """
         return len(self.wins) - len(self.losses) + value
     
     def these_grandchildren(self):
