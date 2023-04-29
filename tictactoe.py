@@ -108,22 +108,36 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    if len(actions(board)) == 1:
-        return (actions(board)).pop()
-    elif len(actions(board)) == 9:
-        return (0,0)
-    dad = Node(board)
+    if not isinstance(board, Node):
+        if actions(board):
+            if len(actions(board))== 9:
+                return (1,1)
+        board = Node(board)
+    dad = board
+    spieler = player(dad.board)
+    target = {X:1, O:-1}
+    if len(dad.children) == 1:
+        return dad.children[0].move
+    elif dad.board == initial_state():
+        return (1,1)
+    elif terminal(dad.board) == True:
+        return None
+    for child in dad.children:
+        if child.utility == target[spieler]:
+            return child.move
+        elif (move := minimax(child)):
+            enemyboard = result(child.board, move)
+            if (option := minimax(enemyboard)):
+                if utility(result(enemyboard, option)) == target[spieler]:
+                    return child.move
     candidates = [dad.children[0]]
     for child in dad.children:
-        child.these_grandchildren()
-        print(child.quality())
-        if child.quality() > candidates[-1].quality():
+        if (value := child.quality()) > candidates[-1].value:
+            child.value = value
             candidates.append(child)
-    lastnode.append(child)
-    print(candidates[-1].quality(), candidates[-1].move)
     return candidates[-1].move
 
-    
+
 def treebuilder(node):
     now = [node]
     while len(now) > 0:
@@ -132,13 +146,16 @@ def treebuilder(node):
         if not terminal(parent.board):
             for move in moves:
                 moved_board = result(parent.board, move)
-                node = Node(moved_board, move)
+                node = Node(moved_board, move, parent)
                 now.append(node)
                 parent.addchild(node)
 
 
+
 class Node:
-    def __init__(self, board, move = None):
+    def __init__(self, board, move = None, parent = None):
+        self.parent = parent
+        self.value = -100000
         self.terminal = terminal(board)
         self.board = board
         self.move = move
@@ -166,14 +183,14 @@ class Node:
         return 9 - self._depth
 
     def quality(self):  
+        self.these_grandchildren()
         value = 0
-        if self.utility == self.target[self.player]:
-            value += 10000
         for _, depth in self.wins:
-            value = value + int(math.pow((10/depth)*5, 4))
+            value = value + int(math.pow((10/depth), 4))
         for _, depth in self.losses:
-            value = value - int(math.pow((10/depth)*5, 4))
-        return len(self.wins) - len(self.losses) + value
+            value = value - int(math.pow((10/depth), 6))
+        self.quality = value
+        return self.quality
     
     def these_grandchildren(self):
         self.allchildren.extend(self.children)
