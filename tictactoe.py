@@ -154,8 +154,8 @@ class Node:
         if move == None:
             self.tree()
     
-    def tree(self,node):
-        now = [node]
+    def tree(self):
+        now = [self]
         while len(now) > 0:
             parent = now.pop(0)
             moves = actions(parent.board)
