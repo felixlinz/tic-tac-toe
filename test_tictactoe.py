@@ -40,6 +40,10 @@ board6 = [[X, EMPTY, O],
           [O, X, O],
           [X, EMPTY, O]]
 
+board7 = [[EMPTY, X, O],
+          [EMPTY, X, O],
+          [EMPTY, X, EMPTY]]
+
 def test_winner():
     assert winner(board1) == X
     assert winner(board2) == O
@@ -47,6 +51,7 @@ def test_winner():
     assert winner(board4) == O
     assert winner(board5) == None
     assert winner(board6) == O
+    assert winner(board7) == X
 
 def test_utility():
     assert utility(board1) == 1
