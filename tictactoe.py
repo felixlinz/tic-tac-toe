@@ -134,18 +134,6 @@ def minimax(board):
             child.value = value
             candidates.append(child)
     return candidates[-1].move
-
-def treebuilder(node):
-    now = [node]
-    while len(now) > 0:
-        parent = now.pop(0)
-        moves = actions(parent.board)
-        if not terminal(parent.board):
-            for move in moves:
-                moved_board = result(parent.board, move)
-                child = Node(moved_board, move, parent)
-                now.append(child)
-                parent.addchild(child)
         
 class Node:
     def __init__(self, board, move = None, parent = None):
@@ -164,7 +152,20 @@ class Node:
         self.utility = utility(self.board)
         self.target = {X:1, O:-1}
         if move == None:
-            treebuilder(self)
+            self.tree(self)
+    
+    def tree(self):
+        now = [self]
+        while len(now) > 0:
+            parent = now.pop(0)
+            moves = actions(parent.board)
+            if not terminal(parent.board):
+                for move in moves:
+                    moved_board = result(parent.board, move)
+                    child = Node(moved_board, move, parent)
+                    now.append(child)
+                    parent.addchild(child)
+
 
     def addchild(self, node):
         self.children.append(node)
