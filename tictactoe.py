@@ -135,6 +135,7 @@ def minimax(board):
         if (value := child.quality()) > candidates[-1].value:
             child.value = value
             candidates.append(child)
+    print("hii")
     return candidates[-1].move
 
 
