@@ -152,7 +152,7 @@ class Node:
         self.utility = utility(self.board)
         self.target = {X:1, O:-1}
         if move == None:
-            self.tree(self)
+            self.tree()
     
     def tree(self):
         now = [self]
