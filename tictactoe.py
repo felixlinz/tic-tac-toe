@@ -152,10 +152,10 @@ class Node:
         self.utility = utility(self.board)
         self.target = {X:1, O:-1}
         if move == None:
-            self.tree(self)
+            self.tree()
     
-    def tree(self):
-        now = [self]
+    def tree(self,node):
+        now = [node]
         while len(now) > 0:
             parent = now.pop(0)
             moves = actions(parent.board)
