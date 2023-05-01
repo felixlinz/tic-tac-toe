@@ -121,7 +121,7 @@ def minimax(board):
     elif terminal(dad.board) == True:
         return None
     for child in dad.children:
-        if child.utility == dad.player:
+        if child.utility == dad.target[dad.player]:
             return child.move
         elif (move := minimax(child)):
             enemyboard = result(child.board, move)
@@ -202,7 +202,6 @@ class Node:
                 self.grandchildren.append(child)
             else:
                 self.allchildren.extend(child.children)
-
 
 
                 
