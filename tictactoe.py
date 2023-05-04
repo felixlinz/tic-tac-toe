@@ -7,6 +7,7 @@ import math
 X = "X"
 O = "O"
 EMPTY = None
+childs = []
 
 
 def initial_state():
@@ -99,7 +100,7 @@ def utility(board):
     """
     if winner(board) == None:
         return 0
-    rules = {"X":1, "O":-1}
+    rules = {X:1, O:-1}
     result = winner(board)
     return rules[result]
 
@@ -108,36 +109,49 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
+    global childs
     if not isinstance(board, Node):
         if actions(board):
-            if len(actions(board))== 9:
+            if len(actions(board)) == 9:
+                childs = []
                 return (1,1)
-        board = Node(board)
+            elif len(actions(board)) == 8:
+                childs = []
+        if not childs:
+            board = Node(board)
+        else:
+            for child in childs:
+                if child.board == board:
+                    board = child
     dad = board
     if len(dad.children) == 1:
+        childs = []
         return dad.children[0].move
-    elif dad.board == initial_state():
-        return (1,1)
     elif terminal(dad.board) == True:
+        childs = []
         return None
     for child in dad.children:
+        child.quality()
+    dad.children.sort(key=lambda c: c.value, reverse=True)
+    for child in dad.children:
         if child.utility == dad.target[dad.player]:
+            childs = child.children
             return child.move
         elif (move := minimax(child)):
-            enemyboard = result(child.board, move)
-            if (option := minimax(enemyboard)):
-                if utility(result(enemyboard, option)) == dad.target[dad.player]:
-                    return child.move
-    candidates = [dad.children[0]]
-    for child in dad.children:
-        if (value := child.quality()) > candidates[-1].value:
-            child.value = value
-            candidates.append(child)
-    return candidates[-1].move
+            for grandchild in child.children:
+                if grandchild.move == move:
+                    enemyboard = grandchild
+            if enemyboard.utility == child.target[child.player]:
+                del child
+            elif (option := minimax(enemyboard)):
+                if utility(result(enemyboard.board, option)) == dad.target[dad.player]:
+                    if utility(result(enemyboard.board, option)) == dad.target[dad.player]:
+                        childs = child.children
+                        return child.move           
+    return dad.children[0].move
         
 class Node:
-    def __init__(self, board, move = None, parent = None):
-        self.parent = parent
+    def __init__(self, board, move = None):
         self.value = -100000
         self.terminal = terminal(board)
         self.board = board
@@ -147,6 +161,7 @@ class Node:
         self.grandchildren = []
         self.wins = []
         self.losses = []
+        self.ties = []
         self.opponent = {X:O, O:X}
         self.player = player(self.board)
         self.utility = utility(self.board)
@@ -162,13 +177,26 @@ class Node:
             if not terminal(parent.board):
                 for move in moves:
                     moved_board = result(parent.board, move)
-                    child = Node(moved_board, move, parent)
+                    child = Node(moved_board, move)
                     now.append(child)
-                    parent.addchild(child)
+                    parent.children.append(child)
 
-
-    def addchild(self, node):
-        self.children.append(node)
+    """"
+    def treecleaner(self):
+        legs = [self]
+        while len(legs) > 0:
+            mom = legs.pop(0)
+            for kiddo in mom.children:
+                if kiddo.utility == kiddo.target[mom.player]:
+                    mom.children = [kiddo]
+                    legs.append(kiddo)
+                    break
+                for grandkiddo in kiddo.children:
+                    if grandkiddo.utility == kiddo.target[kiddo.player]:
+                        del kiddo
+                        legs.extend(mom.children)
+                        break
+    """
 
     def depth(self):
         self._depth = 0
@@ -180,13 +208,8 @@ class Node:
 
     def quality(self):  
         self.these_grandchildren()
-        value = 0
-        for _, depth in self.wins:
-            value = value + int(math.pow((10/(depth+1)), 6))
-        for _, depth in self.losses:
-            value = value - int(math.pow((10/(depth)), 6))
-        self.quality = value
-        return self.quality
+        self.value = len(self.wins) - len(self.losses)
+
     
     def these_grandchildren(self):
         self.allchildren.extend(self.children)
@@ -202,6 +225,7 @@ class Node:
                 self.grandchildren.append(child)
             else:
                 self.allchildren.extend(child.children)
+                self.ties.append((child, childdepth))
 
 
                 
