@@ -7,7 +7,6 @@ import math
 X = "X"
 O = "O"
 EMPTY = None
-childs = []
 
 
 def initial_state():
@@ -100,7 +99,7 @@ def utility(board):
     """
     if winner(board) == None:
         return 0
-    rules = {X:1, O:-1}
+    rules = {"X":1, "O":-1}
     result = winner(board)
     return rules[result]
 
@@ -109,17 +108,11 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    global children
     if not isinstance(board, Node):
         if actions(board):
             if len(actions(board))== 9:
                 return (1,1)
-        if not childs:
-            board = Node(board)
-        else:
-            for child in childs:
-                if child.board == board:
-                    board = child
+        board = Node(board)
     dad = board
     if len(dad.children) == 1:
         return dad.children[0].move
@@ -128,29 +121,35 @@ def minimax(board):
     elif terminal(dad.board) == True:
         return None
     for child in dad.children:
-        child.quality()
-    dad.children.sort(key=lambda c: c.value)
-    for child in dad.children:
-        if child.utility == dad.target[dad.player]:
-            children = child.children
+        if child.utility == dad.player:
             return child.move
         elif (move := minimax(child)):
-            for grandchild in child.children:
-                if grandchild.move == move:
-                    enemyboard = grandchild
+            enemyboard = result(child.board, move)
             if (option := minimax(enemyboard)):
-                if utility(result(enemyboard.board, option)) == dad.target[dad.player]:
-                    children = child.children
+                if utility(result(enemyboard, option)) == dad.target[dad.player]:
                     return child.move
     candidates = [dad.children[0]]
     for child in dad.children:
-        if child.value > candidates[-1].value:
+        if (value := child.quality()) > candidates[-1].value:
+            child.value = value
             candidates.append(child)
-    children = candidates[-1].children
     return candidates[-1].move
+
+def treebuilder(node):
+    now = [node]
+    while len(now) > 0:
+        parent = now.pop(0)
+        moves = actions(parent.board)
+        if not terminal(parent.board):
+            for move in moves:
+                moved_board = result(parent.board, move)
+                child = Node(moved_board, move, parent)
+                now.append(child)
+                parent.addchild(child)
         
 class Node:
-    def __init__(self, board, move = None):
+    def __init__(self, board, move = None, parent = None):
+        self.parent = parent
         self.value = -100000
         self.terminal = terminal(board)
         self.board = board
@@ -165,20 +164,7 @@ class Node:
         self.utility = utility(self.board)
         self.target = {X:1, O:-1}
         if move == None:
-            self.tree()
-    
-    def tree(self):
-        now = [self]
-        while len(now) > 0:
-            parent = now.pop(0)
-            moves = actions(parent.board)
-            if not terminal(parent.board):
-                for move in moves:
-                    moved_board = result(parent.board, move)
-                    child = Node(moved_board, move)
-                    now.append(child)
-                    parent.addchild(child)
-
+            treebuilder(self)
 
     def addchild(self, node):
         self.children.append(node)
@@ -195,11 +181,11 @@ class Node:
         self.these_grandchildren()
         value = 0
         for _, depth in self.wins:
-            value = value + int(math.pow((10/(depth)), 6))
+            value = value + int(math.pow((10/(depth+1)), 6))
         for _, depth in self.losses:
             value = value - int(math.pow((10/(depth)), 6))
-        self.value = value
-
+        self.quality = value
+        return self.quality
     
     def these_grandchildren(self):
         self.allchildren.extend(self.children)
@@ -215,7 +201,6 @@ class Node:
                 self.grandchildren.append(child)
             else:
                 self.allchildren.extend(child.children)
-
 
                 
             
