@@ -147,7 +147,6 @@ def minimax(board):
         return None
     return minimaxhelper(dad)
 
-
 def minimaxhelper(dad):
     for child in dad.children:
         child.quality()
@@ -170,7 +169,6 @@ def minimaxhelper(dad):
         elif not child.hypovalue == child.target[child.player]:
             backup.append(child)
     return backup[0].move
-
 
 class Node:
     def __init__(self, board, move = None):
@@ -233,13 +231,3 @@ class Node:
                 self.losses.append((child, childdepth))
             else:
                 self.allchildren.extend(child.children)
-
-
-
-
-
-
-                
-            
-
-
