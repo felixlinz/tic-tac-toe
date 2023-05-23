@@ -145,7 +145,6 @@ def minimaxhelper(dad):
             candidate.quality()
         frontier.sort(key=lambda c: c.value)
         while parent.terminal == False:
-            print(parent.move, parent.opponent[parent.player])
             for kiddo in parent.children:
                 kiddo.quality()
             parent.children.sort(key=lambda c: c.value)
