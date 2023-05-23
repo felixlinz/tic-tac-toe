@@ -138,17 +138,18 @@ def minimaxhelper(dad):
     for child in dad.children:
         child.quality()
     dad.children.sort(key=lambda c: c.value, reverse=True)
+    # first level children sorted by quality
     for child in dad.children:
         print("___________________")
-        parent = child
         frontier = child.children
-        for child in frontier:
-            child.quality()
+        parent = child
+        for candidate in frontier:
+            candidate.quality()
         frontier.sort(key=lambda c: c.value)
         while parent.terminal == False:
             print(parent.move, parent.opponent[parent.player])
-            for child in parent.children:
-                child.quality()
+            for kiddo in parent.children:
+                kiddo.quality()
             parent.children.sort(key=lambda c: c.value)
             frontier.append(parent.children[-1])
             parent = frontier.pop()
@@ -170,7 +171,7 @@ def minimaxhelper(dad):
         else:
             backup.append(child)
     print("option3")
-    print(child.target[child.player], backup[0].hypovalue, backup[0].move)
+    print(dad.target[dad.opponent[dad.player]], backup[0].hypovalue, backup[0].move)
     return backup[0].move
 
 
