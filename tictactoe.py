@@ -130,32 +130,59 @@ def minimax(board):
     elif terminal(dad.board) == True:
         childs = []
         return None
+    print("#####################")
+    return minimaxhelper(dad)
+
+def minimaxhelper(dad):
+    kiddos = []
     for child in dad.children:
         child.quality()
     dad.children.sort(key=lambda c: c.value, reverse=True)
+    # first level children sorted by quality
     for child in dad.children:
-        if child.utility == dad.target[dad.player]:
-            childs = child.children
+        print("___________________")
+        frontier = child.children
+        parent = child
+        for candidate in frontier:
+            candidate.quality()
+        frontier.sort(key=lambda c: c.value)
+        while parent.terminal == False:
+            print(parent.move, parent.opponent[parent.player])
+            for kiddo in parent.children:
+                kiddo.quality()
+            parent.children.sort(key=lambda c: c.value)
+            frontier.append(parent.children[-1])
+            parent = frontier.pop()
+        print(parent.move, parent.utility, "terminal")
+        child.hypovalue = parent.utility
+        kiddos.append(child)
+        if child.hypovalue == dad.target[dad.player]:
+            print("option1")
             return child.move
-        elif (move := minimax(child)):
-            for grandchild in child.children:
-                if grandchild.move == move:
-                    enemyboard = grandchild
-            if enemyboard.utility == child.target[child.player]:
-                del child
-            elif (option := minimax(enemyboard)):
-                if utility(result(enemyboard.board, option)) == dad.target[dad.player]:
-                    if utility(result(enemyboard.board, option)) == dad.target[dad.player]:
-                        childs = child.children
-                        return child.move           
-    return dad.children[0].move
-        
+    backup = []
+    kiddos.sort(key= lambda c: c.value, reverse=True)
+    while len(kiddos) > 0:
+        child = kiddos.pop(0)
+        if child.hypovalue == dad.target[dad.player]:
+            print("option2")
+            return child.move
+        elif child.hypovalue == child.target[child.player]:
+            del child
+        else:
+            backup.append(child)
+    print("option3")
+    print(dad.target[dad.opponent[dad.player]], backup[0].hypovalue, backup[0].move)
+    return backup[0].move
+
+
 class Node:
-    def __init__(self, board, move = None):
-        self.value = -100000
+    def __init__(self, board, parent = None, move = None):
+        self.hypovalue = 0
+        self.value = 0
         self.terminal = terminal(board)
         self.board = board
         self.move = move
+        self.parent = parent
         self.children = []
         self.allchildren = []
         self.grandchildren = []
@@ -177,7 +204,7 @@ class Node:
             if not terminal(parent.board):
                 for move in moves:
                     moved_board = result(parent.board, move)
-                    child = Node(moved_board, move)
+                    child = Node(moved_board, parent, move)
                     now.append(child)
                     parent.children.append(child)
 
@@ -207,8 +234,31 @@ class Node:
         return 9 - self._depth
 
     def quality(self):  
-        self.these_grandchildren()
-        self.value = len(self.wins) - len(self.losses)
+        self.these_grandchildren()  # collecting grandchildren for superdad
+        if self.utility == self.target[self.opponent[self.player]]:
+            self.value = 1000
+        for _, depth in self.wins:
+            self.value += (9/depth)*(9/depth)
+        for _, depth in self.losses:
+            self.value -= (9/depth)*(9/depth)
+
+        """
+        loosing_parents = set()     # making a set of moves that lead to a definite loss
+        winning_parents = set()     # a set of opponent moves that enable us to win in the next move 
+        for child in self.losses:
+            loosing_parents.add(child.parent)
+        for parent in loosing_parents: 
+            parent.utility = -1     # giving utiity -1 to all parents that lead to definite losses
+
+        for child in self.wins:
+            winning_parents.add(child.parent)
+        for parent in winning_parents:
+            parent.theese_grandchildren()
+            if len(parent.wins) == 0:
+                parent.parent.utility = 1
+        """
+            
+
 
     
     def these_grandchildren(self):
@@ -223,9 +273,15 @@ class Node:
             elif child.utility == self.target[self.player]:
                 self.losses.append((child, childdepth))
                 self.grandchildren.append(child)
+            elif child.terminal == True and child.utility == 0:
+                self.grandchildren.append(child)
+                self.ties.append((child, childdepth))
             else:
                 self.allchildren.extend(child.children)
-                self.ties.append((child, childdepth))
+
+
+
+
 
 
                 
