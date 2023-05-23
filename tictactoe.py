@@ -133,33 +133,17 @@ def minimax(board):
     for child in dad.children:
         child.quality()
     dad.children.sort(key=lambda c: c.value, reverse=True)
-    return minimaxhelper(dad.children)
+    return dad.children[0].move
+
         
-def minimaxhelper(children):
-    """
-    Returns a usseful child
-    """
-    for child in children: # moves done by us 
-        legs = [child.children]
-        board = child.board
-        while not terminal(board):
-            legs.extend(child.children)  # moves done by opponent 
-            for kiddo in legs: 
-                if kiddo.utility == kiddo.target[child.player]:
-                    flag = True
-            
-
-
-
-
 
 class Node:
-    def __init__(self, board, move = None):
+    def __init__(self, board, parent = None, move = None):
         self.value = -100000
         self.terminal = terminal(board)
         self.board = board
         self.move = move
-        self.maerial = 0
+        self.parent = parent
         self.children = []
         self.allchildren = []
         self.grandchildren = []
@@ -181,7 +165,7 @@ class Node:
             if not terminal(parent.board):
                 for move in moves:
                     moved_board = result(parent.board, move)
-                    child = Node(moved_board, move)
+                    child = Node(moved_board, parent, move)
                     now.append(child)
                     parent.children.append(child)
 
@@ -214,8 +198,8 @@ class Node:
         self.these_grandchildren()
         for win, _ in self.wins:
             self.value += 1
-        for loss, depth in self.losses:
-            self.value -= (3/depth)*(3/depth)
+        for _, depth in self.losses:
+            self.value -= (9/depth)*(9/depth)
 
     
     def these_grandchildren(self):
