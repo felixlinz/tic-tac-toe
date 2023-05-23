@@ -3,6 +3,9 @@ Tic Tac Toe Player
 """
 import copy
 import math
+import random
+from functools import wraps
+import time
 
 X = "X"
 O = "O"
@@ -38,12 +41,19 @@ def actions(board):
     Returns set of all possible actions (i, j) available on the board.
     """
     possible_moves = set()
+    smart_moves = [{(0,0)},{(0,2)},{(2,0)},{(2,2)}]
     for i, line in enumerate(board):
         for e, cell in enumerate(line):
             if cell != X and cell != O:
                 move = (i,e)
                 possible_moves.add(move)
-    if len(possible_moves) != 0:
+    if len(possible_moves) > 7:
+        if (1,1) not in possible_moves:
+            possible_moves = random.choice(smart_moves)
+            return possible_moves
+        else: 
+            return {(1,1)}
+    elif possible_moves:
         return possible_moves
     return None
 
@@ -104,19 +114,24 @@ def utility(board):
     result = winner(board)
     return rules[result]
 
+def timeit(func):
+    @wraps(func)
+    def timeit_wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        total_time = end_time - start_time
+        print(f'Function {func.__name__} Took {total_time:.4f} seconds')
+        return result
+    return timeit_wrapper
 
+@timeit
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
     global childs
     if not isinstance(board, Node):
-        if actions(board):
-            if len(actions(board)) == 9:
-                childs = []
-                return (1,1)
-            elif len(actions(board)) == 8:
-                childs = []
         if not childs:
             board = Node(board)
         else:
@@ -132,55 +147,41 @@ def minimax(board):
         return None
     return minimaxhelper(dad)
 
+
 def minimaxhelper(dad):
-    kiddos = []
     for child in dad.children:
         child.quality()
     dad.children.sort(key=lambda c: c.value, reverse=True)
     # first level children sorted by quality
     for child in dad.children:
-        frontier = child.children
         parent = child
-        for candidate in frontier:
-            candidate.quality()
-        frontier.sort(key=lambda c: c.value)
         while parent.terminal == False:
             for kiddo in parent.children:
                 kiddo.quality()
             parent.children.sort(key=lambda c: c.value)
-            frontier.append(parent.children[-1])
-            parent = frontier.pop()
+            parent = parent.children[-1]
         child.hypovalue = parent.utility
-        kiddos.append(child)
         if child.hypovalue == dad.target[dad.player]:
             return child.move
     backup = []
-    kiddos.sort(key= lambda c: c.value, reverse=True)
-    while len(kiddos) > 0:
-        child = kiddos.pop(0)
+    for child in dad.children:
         if child.hypovalue == dad.target[dad.player]:
             return child.move
-        elif child.hypovalue == child.target[child.player]:
-            del child
-        else:
+        elif not child.hypovalue == child.target[child.player]:
             backup.append(child)
     return backup[0].move
 
 
 class Node:
-    def __init__(self, board, parent = None, move = None):
+    def __init__(self, board, move = None):
         self.hypovalue = 0
         self.value = 0
         self.terminal = terminal(board)
         self.board = board
         self.move = move
-        self.parent = parent
         self.children = []
-        self.allchildren = []
-        self.grandchildren = []
         self.wins = []
         self.losses = []
-        self.ties = []
         self.opponent = {X:O, O:X}
         self.player = player(self.board)
         self.utility = utility(self.board)
@@ -190,16 +191,15 @@ class Node:
     
     def tree(self):
         now = [self]
-        while len(now) > 0:
+        while now:
             parent = now.pop(0)
             moves = actions(parent.board)
-            if not terminal(parent.board):
+            if not parent.terminal:
                 for move in moves:
                     moved_board = result(parent.board, move)
-                    child = Node(moved_board, parent, move)
+                    child = Node(moved_board, move)
                     now.append(child)
                     parent.children.append(child)
-
 
     def depth(self):
         self._depth = 0
@@ -212,14 +212,16 @@ class Node:
     def quality(self):  
         self.these_grandchildren()  # collecting grandchildren for superdad
         if self.utility == self.target[self.opponent[self.player]]:
-            self.value = 1000
+            self.value += 1000
+        elif self.utility == self.target[self.player]:
+            self.value -= 1000
         for _, depth in self.wins:
             self.value += (9/depth)*(9/depth)
         for _, depth in self.losses:
             self.value -= (9/depth)*(9/depth)
 
-    
     def these_grandchildren(self):
+        self.allchildren = []
         self.allchildren.extend(self.children)
         depth = self.depth()
         while len(self.allchildren) > 0:
@@ -227,13 +229,8 @@ class Node:
             childdepth = child.depth() - depth 
             if child.utility == self.target[self.opponent[self.player]]:
                 self.wins.append((child, childdepth))
-                self.grandchildren.append(child)
             elif child.utility == self.target[self.player]:
                 self.losses.append((child, childdepth))
-                self.grandchildren.append(child)
-            elif child.terminal == True and child.utility == 0:
-                self.grandchildren.append(child)
-                self.ties.append((child, childdepth))
             else:
                 self.allchildren.extend(child.children)
 
