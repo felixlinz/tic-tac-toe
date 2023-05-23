@@ -130,7 +130,6 @@ def minimax(board):
     elif terminal(dad.board) == True:
         childs = []
         return None
-    print("#####################")
     return minimaxhelper(dad)
 
 def minimaxhelper(dad):
@@ -140,7 +139,6 @@ def minimaxhelper(dad):
     dad.children.sort(key=lambda c: c.value, reverse=True)
     # first level children sorted by quality
     for child in dad.children:
-        print("___________________")
         frontier = child.children
         parent = child
         for candidate in frontier:
@@ -153,25 +151,20 @@ def minimaxhelper(dad):
             parent.children.sort(key=lambda c: c.value)
             frontier.append(parent.children[-1])
             parent = frontier.pop()
-        print(parent.move, parent.utility, "terminal")
         child.hypovalue = parent.utility
         kiddos.append(child)
         if child.hypovalue == dad.target[dad.player]:
-            print("option1")
             return child.move
     backup = []
     kiddos.sort(key= lambda c: c.value, reverse=True)
     while len(kiddos) > 0:
         child = kiddos.pop(0)
         if child.hypovalue == dad.target[dad.player]:
-            print("option2")
             return child.move
         elif child.hypovalue == child.target[child.player]:
             del child
         else:
             backup.append(child)
-    print("option3")
-    print(dad.target[dad.opponent[dad.player]], backup[0].hypovalue, backup[0].move)
     return backup[0].move
 
 
@@ -208,22 +201,6 @@ class Node:
                     now.append(child)
                     parent.children.append(child)
 
-    """"
-    def treecleaner(self):
-        legs = [self]
-        while len(legs) > 0:
-            mom = legs.pop(0)
-            for kiddo in mom.children:
-                if kiddo.utility == kiddo.target[mom.player]:
-                    mom.children = [kiddo]
-                    legs.append(kiddo)
-                    break
-                for grandkiddo in kiddo.children:
-                    if grandkiddo.utility == kiddo.target[kiddo.player]:
-                        del kiddo
-                        legs.extend(mom.children)
-                        break
-    """
 
     def depth(self):
         self._depth = 0
@@ -241,24 +218,6 @@ class Node:
             self.value += (9/depth)*(9/depth)
         for _, depth in self.losses:
             self.value -= (9/depth)*(9/depth)
-
-        """
-        loosing_parents = set()     # making a set of moves that lead to a definite loss
-        winning_parents = set()     # a set of opponent moves that enable us to win in the next move 
-        for child in self.losses:
-            loosing_parents.add(child.parent)
-        for parent in loosing_parents: 
-            parent.utility = -1     # giving utiity -1 to all parents that lead to definite losses
-
-        for child in self.wins:
-            winning_parents.add(child.parent)
-        for parent in winning_parents:
-            parent.theese_grandchildren()
-            if len(parent.wins) == 0:
-                parent.parent.utility = 1
-        """
-            
-
 
     
     def these_grandchildren(self):
