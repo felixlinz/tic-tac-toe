@@ -214,9 +214,9 @@ class Node:
         elif self.utility == self.target[self.player]:
             self.value -= 1000
         for _, depth in self.wins:
-            self.value += (9/depth)*(9/depth)
+            self.value += (9/depth)
         for _, depth in self.losses:
-            self.value -= (9/depth)*(9/depth)
+            self.value -= (9/depth)
 
     def these_grandchildren(self):
         self.allchildren = []
