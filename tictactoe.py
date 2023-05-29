@@ -130,35 +130,19 @@ def minimax(board):
     """
     dad = Node(board)
     if len(dad.children) == 1:
-        childs = []
         return dad.children[0].move
-    elif terminal(dad.board) == True:
-        childs = []
+    elif dad.terminal == True:
         return None
     return minimaxhelper(dad)
 
 def minimaxhelper(dad):
-    for child in dad.children:
-        child.quality()
-    dad.children.sort(key=lambda c: c.value, reverse=True)
-    # first level children sorted by quality
-    for child in dad.children:
-        parent = child
-        while parent.terminal == False:
-            for kiddo in parent.children:
-                kiddo.quality()
-            parent.children.sort(key=lambda c: c.value)
-            parent = parent.children[-1]
-        child.hypovalue = parent.utility
-        if child.hypovalue == dad.target[dad.player]:
-            return child.move
-    backup = []
-    for child in dad.children:
-        if child.hypovalue == dad.target[dad.player]:
-            return child.move
-        elif not child.hypovalue == child.target[child.player]:
-            backup.append(child)
-    return backup[0].move
+    if dad.player == X:
+        dad.children.sort(key=lambda c: c.value, reverse=True)
+    else: 
+        dad.children.sort(key=lambda c: c.value)
+    print([child.value for child in dad.children])
+    return dad.children[0].move
+
 
 class Node:
     def __init__(self, board, move = None):
@@ -176,6 +160,7 @@ class Node:
         self.target = {X:1, O:-1}
         if move == None:
             self.tree()
+        self.quality()
     
     def tree(self):
         now = [self]
@@ -205,9 +190,7 @@ class Node:
                 column = [row[i] for row in self.board]
                 self.evaluation(column)
             self.evaluation([self.board[0][0],self.board[1][1],self.board[2][2]])
-            self.evaluation([self.board[0][2],self.board[1][1],self.board[2][0]])
-
-                
+            self.evaluation([self.board[0][2],self.board[1][1],self.board[2][0]])             
         else:
             self.value = self.utility * 100
 
@@ -219,17 +202,3 @@ class Node:
         if math.pow(value,2) == 4:
             self.value += value*5
         
-
-    def these_grandchildren(self):
-        self.allchildren = []
-        self.allchildren.extend(self.children)
-        depth = self.depth()
-        while len(self.allchildren) > 0:
-            child = self.allchildren.pop(0)
-            childdepth = child.depth() - depth 
-            if child.utility == self.target[self.opponent[self.player]]:
-                self.wins.append((child, childdepth))
-            elif child.utility == self.target[self.player]:
-                self.losses.append((child, childdepth))
-            else:
-                self.allchildren.extend(child.children)
