@@ -177,6 +177,8 @@ class Node:
         
     
     def tree(self):
+        alpha = float("-inf")
+        beta = float("inf")
         now = [self]
         for i in range(4):
             later = []
@@ -187,39 +189,26 @@ class Node:
                     for move in moves:
                         moved_board = result(parent.board, move)
                         child = Node(moved_board, move)
-                        parent.children.append(child)
-                        later.append(child)
+                                    
+                        if self.player == O:
+                            if child.value >= alpha:
+                                alpha = child.value
+                                parent.children.append(child)
+                                later.append(child)
+                            else:
+                                parent.value = child.value
+                                break
+                        else:
+                            if child.value <= beta:
+                                beta = child.value
+                                parent.children.append(child)
+                                later.append(child)
+                            else:
+                                parent.value = child.value
+                                parent.children.append(child)
+                                break
             now = later
-        """
-        if self.player == X:
-            rev = -1000
-            for node in now:
-                if not node.terminal:
-                        moves = actions(node.board)
-                        for move in moves:
-                            moved_board = result(node.board, move)
-                            child = Node(moved_board, move)
-                            if child.value > rev:
-                                rev = child.value
-                                node.children.append(child)
-                            elif child.value < rev:
-                                node.children.append(child)
-                                break
-        else:
-            rev = 1000
-            for node in now:
-                if not node.terminal:
-                        moves = actions(node.board)
-                        for move in moves:
-                            moved_board = result(node.board, move)
-                            child = Node(moved_board, move)
-                            if child.value < rev:
-                                rev = child.value
-                                node.children.append(child)
-                            elif child.value > rev:
-                                node.children.append(child)
-                                break
-        """
+
         
     def quality(self):  
         if not self.terminal:
