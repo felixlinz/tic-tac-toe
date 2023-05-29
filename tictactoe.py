@@ -131,11 +131,13 @@ def minimax(board):
         if dad.children:
             for grandchild in child.children:
                 # our moves
-                if grandchild.children:                
+                if grandchild.children:               
+                    """ 
                     for minichild in grandchild.children:
                         # opponent moves
                         if minichild.children:
                             minichild.value = minimaxhelper(minichild).value
+                    """
                     grandchild.value = minimaxhelper(grandchild).value
         if child.children:
             child.value = minimaxhelper(child).value
@@ -152,9 +154,9 @@ def minimaxhelper(parent):
         the best rated child object for the incoming Node
     """
     if parent.player == X:
-        parent.children.sort(key=lambda c: c.value, reverse=True)
+        parent.children.sort(key=lambda c: c.alpha, reverse=True)
     else: 
-        parent.children.sort(key=lambda c: c.value)
+        parent.children.sort(key=lambda c: c.beta)
     return parent.children[0]
 
 
@@ -163,6 +165,8 @@ class Node:
     Represents a possible game State 
     """
     def __init__(self, board, move = None):
+        self.alpha = -1000
+        self.beta = 1000
         self.value = 0
         self.terminal = terminal(board)
         self.board = board
@@ -179,8 +183,6 @@ class Node:
     def tree(self):
         now = [self]
         for i in range(4):
-            alpha = -10000
-            beta = 10000
             later = []
             while now:
                 parent = now.pop(0)
@@ -189,22 +191,18 @@ class Node:
                     for move in moves:
                         moved_board = result(parent.board, move)
                         child = Node(moved_board, move)
-                                    
+                          
                         if parent.player == X:
-                            if child.value >= alpha:
-                                alpha = child.value
-                                parent.children.append(child)
-                                later.append(child)
-                            else:
-                                parent.children.append(child)
+                            if child.value >= parent.alpha:
+                                parent.alpha = child.value
+                            parent.children.append(child)
+                            later.append(child)
+                                
                         else:
-                            if child.value <= beta:
-                                beta = child.value
-                                parent.children.append(child)
-                                later.append(child)
-                            else:
-                                parent.children.append(child)
-            print(len(later))
+                            if child.value <= parent.beta:
+                                parent.beta = child.beta
+                            parent.children.append(child)
+                            later.append(child)
             now = later
 
         
