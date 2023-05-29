@@ -40,18 +40,11 @@ def actions(board):
     Returns set of all possible actions (i, j) available on the board.
     """
     possible_moves = set()
-    smart_moves = [{(0,0)},{(0,2)},{(2,0)},{(2,2)}]
     for i, line in enumerate(board):
         for e, cell in enumerate(line):
             if cell != X and cell != O:
                 move = (i,e)
                 possible_moves.add(move)
-    if len(possible_moves) > 7:
-        if (1,1) not in possible_moves:
-            possible_moves = random.choice(smart_moves)
-            return possible_moves
-        else: 
-            return {(1,1)}
     if possible_moves:
         return possible_moves
     return None
@@ -63,9 +56,7 @@ def result(board, action):
     """
     try: 
         resultboard = copy.deepcopy(board)
-        y,x = action
-        operator = player(board)
-        resultboard[y][x] = operator
+        resultboard[action[0]][action[1]] = player(board)
         return resultboard
     except TypeError:
         raise Exception("not a valid move")
@@ -140,20 +131,17 @@ def minimax(board):
         if dad.children:
             for grandchild in child.children:
                 # our moves
-                if grandchild.children:
-                    """
+                if grandchild.children:                
                     for minichild in grandchild.children:
                         # opponent moves
                         if minichild.children:
                             minichild.value = minimaxhelper(minichild).value
-                    """
                     grandchild.value = minimaxhelper(grandchild).value
         if child.children:
             child.value = minimaxhelper(child).value
-    print(minimaxhelper(dad).value)
     return minimaxhelper(dad).move
 
-def minimaxhelper(dad):
+def minimaxhelper(parent):
     """
 
     Args:
@@ -163,11 +151,11 @@ def minimaxhelper(dad):
     Returns:
         the best rated child object for the incoming Node
     """
-    if dad.player == X:
-        dad.children.sort(key=lambda c: c.value, reverse=True)
+    if parent.player == X:
+        parent.children.sort(key=lambda c: c.value, reverse=True)
     else: 
-        dad.children.sort(key=lambda c: c.value)
-    return dad.children[0]
+        parent.children.sort(key=lambda c: c.value)
+    return parent.children[0]
 
 
 class Node:
@@ -190,7 +178,7 @@ class Node:
     
     def tree(self):
         now = [self]
-        for i in range(3):
+        for i in range(4):
             later = []
             while now:
                 parent = now.pop(0)
@@ -204,8 +192,8 @@ class Node:
             now = later
         """
         if self.player == X:
+            rev = -1000
             for node in now:
-                rev = -1000
                 if not node.terminal:
                         moves = actions(node.board)
                         for move in moves:
@@ -218,8 +206,8 @@ class Node:
                                 node.children.append(child)
                                 break
         else:
+            rev = 1000
             for node in now:
-                rev = 1000
                 if not node.terminal:
                         moves = actions(node.board)
                         for move in moves:
@@ -231,8 +219,8 @@ class Node:
                             elif child.value > rev:
                                 node.children.append(child)
                                 break
-    """
-
+        """
+        
     def quality(self):  
         if not self.terminal:
             for row in self.board:
