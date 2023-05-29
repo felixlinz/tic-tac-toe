@@ -149,6 +149,7 @@ def minimax(board):
                     grandchild.value = minimaxhelper(grandchild).value
         if child.children:
             child.value = minimaxhelper(child).value
+    print(minimaxhelper(dad).value)
     return minimaxhelper(dad).move
 
 def minimaxhelper(dad):
@@ -184,8 +185,8 @@ class Node:
             later = []
             while now:
                 parent = now.pop(0)
-                moves = actions(parent.board)
                 if not parent.terminal:
+                    moves = actions(parent.board)
                     for move in moves:
                         moved_board = result(parent.board, move)
                         child = Node(moved_board, move)
