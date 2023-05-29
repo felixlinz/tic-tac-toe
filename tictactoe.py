@@ -3,7 +3,6 @@ Tic Tac Toe Player
 """
 import copy
 import math
-import random
 from functools import wraps
 import time
 
@@ -46,13 +45,15 @@ def actions(board):
             if cell != X and cell != O:
                 move = (i,e)
                 possible_moves.add(move)
+    """
     if len(possible_moves) > 7:
         if (1,1) not in possible_moves:
             possible_moves = random.choice(smart_moves)
             return possible_moves
         else: 
             return {(1,1)}
-    elif possible_moves:
+    """
+    if possible_moves:
         return possible_moves
     return None
 
@@ -123,6 +124,7 @@ def timeit(func):
         return result
     return timeit_wrapper
 
+
 @timeit
 def minimax(board):
     """
@@ -133,15 +135,28 @@ def minimax(board):
         return dad.children[0].move
     elif dad.terminal == True:
         return None
-    return minimaxhelper(dad)
+    # our moves
+    for child in dad.children:
+        # opponent moves
+        if dad.children:
+            for grandchild in child.children:
+                # our moves
+                if grandchild.children:
+                    for minichild in grandchild.children:
+                        # opponent moves
+                        if minichild.children:
+                            minichild.value = minimaxhelper(minichild).value
+                    grandchild.value = minimaxhelper(grandchild).value
+        if child.children:
+            child.value = minimaxhelper(child).value
+    return minimaxhelper(dad).move
 
 def minimaxhelper(dad):
     if dad.player == X:
         dad.children.sort(key=lambda c: c.value, reverse=True)
     else: 
         dad.children.sort(key=lambda c: c.value)
-    print([child.value for child in dad.children])
-    return dad.children[0].move
+    return dad.children[0]
 
 
 class Node:
@@ -161,18 +176,22 @@ class Node:
         if move == None:
             self.tree()
         self.quality()
+        
     
     def tree(self):
         now = [self]
-        while now:
-            parent = now.pop(0)
-            moves = actions(parent.board)
-            if not parent.terminal:
-                for move in moves:
-                    moved_board = result(parent.board, move)
-                    child = Node(moved_board, move)
-                    now.append(child)
-                    parent.children.append(child)
+        for i in range(4):
+            later = []
+            while now:
+                parent = now.pop(0)
+                moves = actions(parent.board)
+                if not parent.terminal:
+                    for move in moves:
+                        moved_board = result(parent.board, move)
+                        child = Node(moved_board, move)
+                        parent.children.append(child)
+                        later.append(child)
+            now = later
 
     def depth(self):
         self._depth = 0
@@ -201,4 +220,3 @@ class Node:
                 value += self.target[cell]
         if math.pow(value,2) == 4:
             self.value += value*5
-        
