@@ -3,6 +3,7 @@ Tic Tac Toe Player
 """
 import copy
 import math
+import random
 from functools import wraps
 import time
 
@@ -45,14 +46,12 @@ def actions(board):
             if cell != X and cell != O:
                 move = (i,e)
                 possible_moves.add(move)
-    """
     if len(possible_moves) > 7:
         if (1,1) not in possible_moves:
             possible_moves = random.choice(smart_moves)
             return possible_moves
         else: 
             return {(1,1)}
-    """
     if possible_moves:
         return possible_moves
     return None
@@ -142,10 +141,12 @@ def minimax(board):
             for grandchild in child.children:
                 # our moves
                 if grandchild.children:
+                    """
                     for minichild in grandchild.children:
                         # opponent moves
                         if minichild.children:
                             minichild.value = minimaxhelper(minichild).value
+                    """
                     grandchild.value = minimaxhelper(grandchild).value
         if child.children:
             child.value = minimaxhelper(child).value
@@ -153,6 +154,15 @@ def minimax(board):
     return minimaxhelper(dad).move
 
 def minimaxhelper(dad):
+    """
+
+    Args:
+        dad (_Node_): takes a Node element representing a Game State that needs
+        to have at least one possible Child
+
+    Returns:
+        the best rated child object for the incoming Node
+    """
     if dad.player == X:
         dad.children.sort(key=lambda c: c.value, reverse=True)
     else: 
@@ -161,16 +171,15 @@ def minimaxhelper(dad):
 
 
 class Node:
+    """
+    Represents a possible game State 
+    """
     def __init__(self, board, move = None):
-        self.hypovalue = 0
         self.value = 0
         self.terminal = terminal(board)
         self.board = board
         self.move = move
         self.children = []
-        self.wins = []
-        self.losses = []
-        self.opponent = {X:O, O:X}
         self.player = player(self.board)
         self.utility = utility(self.board)
         self.target = {X:1, O:-1}
@@ -193,27 +202,36 @@ class Node:
                         parent.children.append(child)
                         later.append(child)
             now = later
-        for node in now:
-            rev = -1000
-            if not node.terminal:
-                    moves = actions(parent.board)
-                    for move in moves:
-                        moved_board = result(parent.board, move)
-                        child = Node(moved_board, move)
-                        if child.value > rev:
-                            rev = child.value
-                            parent.children.append(child)
-                            later.append(child)
-                        elif child.value < rev:
-                            break
-
-    def depth(self):
-        self._depth = 0
-        for row in self.board:
-            for cell in row: 
-                if cell == EMPTY:
-                    self._depth += 1
-        return 9 - self._depth
+        """
+        if self.player == X:
+            for node in now:
+                rev = -1000
+                if not node.terminal:
+                        moves = actions(node.board)
+                        for move in moves:
+                            moved_board = result(node.board, move)
+                            child = Node(moved_board, move)
+                            if child.value > rev:
+                                rev = child.value
+                                node.children.append(child)
+                            elif child.value < rev:
+                                node.children.append(child)
+                                break
+        else:
+            for node in now:
+                rev = 1000
+                if not node.terminal:
+                        moves = actions(node.board)
+                        for move in moves:
+                            moved_board = result(node.board, move)
+                            child = Node(moved_board, move)
+                            if child.value < rev:
+                                rev = child.value
+                                node.children.append(child)
+                            elif child.value > rev:
+                                node.children.append(child)
+                                break
+    """
 
     def quality(self):  
         if not self.terminal:

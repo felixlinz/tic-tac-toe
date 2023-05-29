@@ -3,6 +3,7 @@ from tictactoe import utility
 from tictactoe import result
 from tictactoe import player
 from tictactoe import Node
+from tictactoe import minimax
 
 X = "X"
 O = "O"
@@ -32,7 +33,7 @@ board5 = [[EMPTY, EMPTY, EMPTY],
             [EMPTY, O, EMPTY],
             [X, X, O]]
 
-board5 = [[EMPTY, EMPTY, EMPTY],
+board7 = [[EMPTY, EMPTY, EMPTY],
             [EMPTY, O, EMPTY],
             [X, EMPTY, EMPTY]]
 
@@ -71,11 +72,20 @@ def test_player():
     assert player(initial_board) == X
     assert player(board3) == O
 
-def test_depth():
-    d1board = Node(board1)
-    assert d1board.depth() == 6
-    d2board = Node(board2)
-    assert d2board.depth() == 5
-    d3board = Node(board3)
-    assert d3board.depth() == 5
-
+def test_minimax():
+    assert minimax(initial_board) == (1,1)
+    assert minimax(board2) == None
+    assert minimax(board5) == (0,0)
+    
+test_node = Node(initial_board)
+test_node2 = Node(board1)
+test_node3 = Node(board2)
+test_node4 = Node(board3)
+test_node5 = Node(board5)
+    
+def test_quality():
+    assert test_node.value == 0
+    assert test_node2.value == 100
+    assert test_node3.value == -100
+    assert test_node4.value == 0
+    assert test_node5.value == -10
