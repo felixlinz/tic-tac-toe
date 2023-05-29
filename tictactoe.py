@@ -10,7 +10,6 @@ import time
 X = "X"
 O = "O"
 EMPTY = None
-childs = []
 
 
 def initial_state():
@@ -84,11 +83,10 @@ def winner(board):
         if board[1][i] == checker and board[2][i] == checker:
             if checker != None:
                 return checker
-    checker = board[0][0]
-    if board[1][1] == checker and board[2][2] == checker:
+    checker = board[1][1]
+    if board[0][0] == checker and board[2][2] == checker:
         return checker
-    checker = board[0][2]
-    if board[1][1]==checker and board[2][0] == checker:
+    if board[0][2]==checker and board[2][0] == checker:
         return checker
     return None
 
@@ -130,15 +128,7 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    global childs
-    if not isinstance(board, Node):
-        if not childs:
-            board = Node(board)
-        else:
-            for child in childs:
-                if child.board == board:
-                    board = child
-    dad = board
+    dad = Node(board)
     if len(dad.children) == 1:
         childs = []
         return dad.children[0].move
@@ -208,15 +198,27 @@ class Node:
         return 9 - self._depth
 
     def quality(self):  
-        self.these_grandchildren()  # collecting grandchildren for superdad
-        if self.utility == self.target[self.opponent[self.player]]:
-            self.value += 1000
-        elif self.utility == self.target[self.player]:
-            self.value -= 1000
-        for _, depth in self.wins:
-            self.value += (9/depth)
-        for _, depth in self.losses:
-            self.value -= (9/depth)
+        if not self.terminal:
+            for row in self.board:
+                self.evaluation(row)
+            for i in range(3):
+                column = [row[i] for row in self.board]
+                self.evaluation(column)
+            self.evaluation([self.board[0][0],self.board[1][1],self.board[2][2]])
+            self.evaluation([self.board[0][2],self.board[1][1],self.board[2][0]])
+
+                
+        else:
+            self.value = self.utility * 100
+
+    def evaluation(self, row):
+        value = 0
+        for cell in row:
+            if cell != EMPTY:
+                value += self.target[cell]
+        if math.pow(value,2) == 4:
+            self.value += value*5
+        
 
     def these_grandchildren(self):
         self.allchildren = []
