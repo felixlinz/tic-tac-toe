@@ -177,10 +177,10 @@ class Node:
         
     
     def tree(self):
-        alpha = float("-inf")
-        beta = float("inf")
         now = [self]
         for i in range(4):
+            alpha = -10000
+            beta = 10000
             later = []
             while now:
                 parent = now.pop(0)
@@ -190,23 +190,21 @@ class Node:
                         moved_board = result(parent.board, move)
                         child = Node(moved_board, move)
                                     
-                        if self.player == O:
+                        if parent.player == X:
                             if child.value >= alpha:
                                 alpha = child.value
                                 parent.children.append(child)
                                 later.append(child)
                             else:
-                                parent.value = child.value
-                                break
+                                parent.children.append(child)
                         else:
                             if child.value <= beta:
                                 beta = child.value
                                 parent.children.append(child)
                                 later.append(child)
                             else:
-                                parent.value = child.value
                                 parent.children.append(child)
-                                break
+            print(len(later))
             now = later
 
         
