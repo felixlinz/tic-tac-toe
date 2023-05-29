@@ -181,7 +181,7 @@ class Node:
     
     def tree(self):
         now = [self]
-        for i in range(4):
+        for i in range(3):
             later = []
             while now:
                 parent = now.pop(0)
@@ -193,6 +193,19 @@ class Node:
                         parent.children.append(child)
                         later.append(child)
             now = later
+        for node in now:
+            rev = -1000
+            if not node.terminal:
+                    moves = actions(parent.board)
+                    for move in moves:
+                        moved_board = result(parent.board, move)
+                        child = Node(moved_board, move)
+                        if child.value > rev:
+                            rev = child.value
+                            parent.children.append(child)
+                            later.append(child)
+                        elif child.value < rev:
+                            break
 
     def depth(self):
         self._depth = 0
