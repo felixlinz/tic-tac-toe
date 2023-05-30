@@ -184,6 +184,10 @@ class Node:
         
     
     def tree(self):
+        """
+        generates 4 levels of ancestors for the parent node
+        if possible
+        """
         # our choices 
         for move in actions(self.board):
             child = Node(result(self.board,move), move)
@@ -223,18 +227,29 @@ class Node:
                                             break
 
     def quality(self):  
+        """
+        figueres out a value for the node its called on
+        
+        """
         if not self.terminal:
             for row in self.board:
-                self.evaluation(row)
+                # row evaluation
+                self.row_evaluation(row)
             for i in range(3):
-                column = [row[i] for row in self.board]
-                self.evaluation(column)
-            self.evaluation([self.board[0][0],self.board[1][1],self.board[2][2]])
-            self.evaluation([self.board[0][2],self.board[1][1],self.board[2][0]])             
+                # column evaluation
+                self.row_evaluation([row[i] for row in self.board])
+            # diagonal evaluation
+            self.row_evaluation([self.board[0][0],self.board[1][1],self.board[2][2]])
+            self.row_evaluation([self.board[0][2],self.board[1][1],self.board[2][0]])             
         else:
+            # assigns a value of - 100 for loosing state, 100 for winner, 0 for draw
             self.value = self.utility * 100
 
-    def evaluation(self, row):
+    def row_evaluation(self, row):
+        """
+        edits the value of its node based on the
+        usefullness of a single row 
+        """
         value = 0
         for cell in row:
             if cell != EMPTY:
