@@ -4,6 +4,7 @@ from tictactoe import result
 from tictactoe import player
 from tictactoe import Node
 from tictactoe import minimax
+from tictactoe import initial_state
 
 X = "X"
 O = "O"
@@ -40,6 +41,10 @@ board7 = [[EMPTY, EMPTY, EMPTY],
 board6 = [[X, EMPTY, O],
           [O, X, O],
           [X, EMPTY, O]]
+
+
+def test_initial_state():
+    assert initial_state() == initial_board
 
 def test_winner():
     assert winner(board1) == X
