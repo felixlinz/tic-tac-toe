@@ -107,19 +107,7 @@ def utility(board):
     result = winner(board)
     return rules[result]
 
-def timeit(func):
-    @wraps(func)
-    def timeit_wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        total_time = end_time - start_time
-        print(f'Function {func.__name__} Took {total_time:.4f} seconds')
-        return result
-    return timeit_wrapper
 
-
-@timeit
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
@@ -158,8 +146,6 @@ def minimaxhelper(parent):
     Returns:
         the best rated child object for the incoming Node
     """
-    if len(parent.children) == 0:
-        return parent.value
     if parent.player == X:
         return max(parent.children, key=lambda c: c.value)
     else: 
@@ -186,49 +172,53 @@ class Node:
             self.tree()
 
         
-    
     def tree(self):
         """
         generates 4 levels of ancestors for the parent node
         if possible
         """
-        # our choices 
+        # MAX PLAYER
         for move in actions(self.board):
             child = Node(result(self.board,move), move)
             self.children.append(child)
-            # opponent choices 
+            # MIN PLAYER
             if child.terminal:
                 child.quality()
             else:
                 for move in actions(child.board):
                     grandchild = Node(result(child.board, move), move)
                     child.children.append(grandchild)
-                    # our choices 
+                    # MAX PLAYER
                     if grandchild.terminal:
                         grandchild.quality()
                     else:
-                        for move in actions(grandchild.board):
+                        for i, move in enumerate(actions(grandchild.board)):
                             minichild = Node(result(grandchild.board, move), move)
                             grandchild.children.append(minichild)
-                            # opponent choices 
+                            # MIN PLAYER
                             if minichild.terminal:
                                 minichild.quality()
                             else:
-                                for i, move in enumerate(actions(minichild.board)):
+                                for move in actions(minichild.board):
                                     superchild = Node(result(minichild.board, move), move)
                                     minichild.children.append(superchild)
                                     superchild.quality()
-                                    
+                                    # alphabeta pruning
                                     if grandchild.player == X:
-                                        if superchild.value <= grandchild.beta:
-                                            grandchild.beta = superchild.value
-                                        else:
+                                        if superchild.value < minichild.beta:
+                                            minichild.beta = superchild.value            
+                                        if minichild.beta < grandchild.alpha and i != 0:
                                             break
                                     else:
-                                        if superchild.value >= grandchild.alpha:
-                                            grandchild.beta = superchild.value
-                                        else:
-                                            break
+                                        if superchild.value > minichild.alpha:
+                                            minichild.alpha = superchild.value            
+                                        if minichild.alpha > grandchild.alpha and i != 0:
+                                            break                                     
+                                if minichild.beta < grandchild.beta:
+                                    grandchild.beta = minichild.beta
+                                if minichild.alpha > grandchild.alpha:
+                                    grandchild.alpha = minichild.alpha
+                                        
 
     def quality(self):  
         """
