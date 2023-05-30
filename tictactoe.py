@@ -125,21 +125,25 @@ def minimax(board):
         return dad.children[0].move
     elif dad.terminal == True:
         return None
-    # our moves
+    # our moves / maximizing
     for child in dad.children:
-        # opponent moves
-        if dad.children:
-            for grandchild in child.children:
-                # our moves
-                if grandchild.children:               
+        
+        if child.value == dad.target[dad.player]*100:
+            return child.move
+        
+        # opponent moves / minimizing
+        if child.children:
+            for grandchild in child.children:              
+                # our moves / maximizing
+                if grandchild.children:                         
                     for minichild in grandchild.children:
-                        # opponent moves
+                        # opponent moves / minimizing
                         if minichild.children:
                             minichild.value = minimaxhelper(minichild).value
                     grandchild.value = minimaxhelper(grandchild).value
-        if child.children:
             child.value = minimaxhelper(child).value
     return minimaxhelper(dad).move
+
 
 def minimaxhelper(parent):
     """
@@ -152,10 +156,10 @@ def minimaxhelper(parent):
         the best rated child object for the incoming Node
     """
     if parent.player == X:
-        parent.children.sort(key=lambda c: c.alpha, reverse=True)
+        return max(parent.children, key=lambda c: c.value)
     else: 
-        parent.children.sort(key=lambda c: c.beta)
-    return parent.children[0]
+        return min(parent.children, key=lambda c: c.value)
+
 
 
 class Node:
@@ -179,31 +183,39 @@ class Node:
         
     
     def tree(self):
-        now = [self]
-        for i in range(4):
-            later = []
-            while now:
-                parent = now.pop(0)
-                if not parent.terminal:
-                    moves = actions(parent.board)
-                    for move in moves:
-                        moved_board = result(parent.board, move)
-                        child = Node(moved_board, move)
-                          
-                        if parent.player == X:
-                            if child.value >= parent.alpha:
-                                parent.alpha = child.value
-                            parent.children.append(child)
-                            later.append(child)
-                                
-                        else:
-                            if child.value <= parent.beta:
-                                parent.beta = child.beta
-                            parent.children.append(child)
-                            later.append(child)
-            now = later
-
-        
+        # our choices 
+        if not (moves := actions(self.board)):
+            return
+        for move in moves:
+            child = Node(result(self.board,move), move)
+            self.children.append(child)
+            # opponent choices 
+            if (childmoves := actions(child.board)):
+                for move in childmoves:
+                    grandchild = Node(result(child.board, move), move)
+                    child.children.append(grandchild)
+                    # our choices 
+                    if (grandmoves := actions(grandchild.board)):
+                        for move in grandmoves:
+                            minichild = Node(result(grandchild.board, move), move)
+                            grandchild.children.append(minichild)
+                            # opponent choices 
+                            if (minimoves :=  actions(minichild.board)):
+                                for i, move in enumerate(minimoves):
+                                    superchild = Node(result(minichild.board, move), move)
+                                    minichild.children.append(superchild)
+                                    
+                                    if grandchild.player == X:
+                                        if superchild.value <= grandchild.beta:
+                                            grandchild.beta = superchild.value
+                                        else:
+                                            break
+                                    else:
+                                        if superchild.value >= grandchild.alpha:
+                                            grandchild.beta = superchild.value
+                                        else:
+                                            break
+                                    
     def quality(self):  
         if not self.terminal:
             for row in self.board:
