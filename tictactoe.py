@@ -107,7 +107,18 @@ def utility(board):
     result = winner(board)
     return rules[result]
 
+def timeit(func):
+    @wraps(func)
+    def timeit_wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        total_time = end_time - start_time
+        print(f'Function {func.__name__} Took {total_time:.4f} seconds')
+        return result
+    return timeit_wrapper
 
+@timeit
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
@@ -204,6 +215,7 @@ class Node:
                                     minichild.children.append(superchild)
                                     superchild.quality()
                                     # alphabeta pruning
+                                    
                                     if grandchild.player == X:
                                         if superchild.value < minichild.beta:
                                             minichild.beta = superchild.value            
@@ -213,7 +225,8 @@ class Node:
                                         if superchild.value > minichild.alpha:
                                             minichild.alpha = superchild.value            
                                         if minichild.alpha > grandchild.alpha and i != 0:
-                                            break                                     
+                                            break        
+                                                                
                                 if minichild.beta < grandchild.beta:
                                     grandchild.beta = minichild.beta
                                 if minichild.alpha > grandchild.alpha:
