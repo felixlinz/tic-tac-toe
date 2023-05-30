@@ -1,3 +1,4 @@
+import pytest
 from tictactoe import winner
 from tictactoe import utility
 from tictactoe import result
@@ -72,6 +73,12 @@ def test_result():
     assert result(initial_board, (2,2)) == [[EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, X]]
+    with pytest.raises(Exception):
+        result(board6, (0,0))
+    with pytest.raises(Exception):
+        result([000])
+    with pytest.raises(Exception):
+        result(initial_board, (0,0,0))
 
 def test_player():
     assert player(initial_board) == X
