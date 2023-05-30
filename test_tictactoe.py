@@ -67,6 +67,8 @@ def test_result():
     assert result(initial_board, (1,0)) == [[EMPTY, EMPTY, EMPTY],
             [X, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY]]
+    # checking wether result changes parent board
+    assert initial_board[1][0] == EMPTY
     assert result(initial_board, (1,1)) == [[EMPTY, EMPTY, EMPTY],
             [EMPTY, X, EMPTY],
             [EMPTY, EMPTY, EMPTY]]
