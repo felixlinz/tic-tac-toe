@@ -84,8 +84,13 @@ test_node4 = Node(board3)
 test_node5 = Node(board5)
     
 def test_quality():
+    test_node.quality()
     assert test_node.value == 0
+    test_node2.quality()
     assert test_node2.value == 100
+    test_node3.quality()
     assert test_node3.value == -100
+    test_node4.quality()
     assert test_node4.value == 0
+    test_node5.quality()
     assert test_node5.value == -10
