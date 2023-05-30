@@ -127,7 +127,6 @@ def minimax(board):
         return None
     # our moves / maximizing
     for child in dad.children:
-        child.quality()
         if child.value == dad.target[dad.player]*100:
             return child.move
 
@@ -140,11 +139,7 @@ def minimax(board):
                         # opponent moves / minimizing
                         if minichild.children:
                             minichild.value = minimaxhelper(minichild).value
-                        else:
-                            minichild.quality()
                     grandchild.value = minimaxhelper(grandchild).value
-                else:
-                    grandchild.quality()
             child.value = minimaxhelper(child).value
     return minimaxhelper(dad).move
 
@@ -190,24 +185,28 @@ class Node:
     
     def tree(self):
         # our choices 
-        if not (moves := actions(self.board)):
-            return
-        for move in moves:
+        for move in actions(self.board):
             child = Node(result(self.board,move), move)
             self.children.append(child)
             # opponent choices 
-            if (childmoves := actions(child.board)):
-                for move in childmoves:
+            if child.terminal:
+                child.quality()
+            else:
+                for move in actions(child.board):
                     grandchild = Node(result(child.board, move), move)
                     child.children.append(grandchild)
                     # our choices 
-                    if (grandmoves := actions(grandchild.board)):
-                        for move in grandmoves:
+                    if grandchild.terminal:
+                        grandchild.quality()
+                    else:
+                        for move in actions(grandchild.board):
                             minichild = Node(result(grandchild.board, move), move)
                             grandchild.children.append(minichild)
                             # opponent choices 
-                            if (minimoves :=  actions(minichild.board)):
-                                for i, move in enumerate(minimoves):
+                            if minichild.terminal:
+                                minichild.quality()
+                            else:
+                                for i, move in enumerate(actions(minichild.board)):
                                     superchild = Node(result(minichild.board, move), move)
                                     minichild.children.append(superchild)
                                     superchild.quality()
@@ -222,7 +221,7 @@ class Node:
                                             grandchild.beta = superchild.value
                                         else:
                                             break
-                                    
+
     def quality(self):  
         if not self.terminal:
             for row in self.board:
