@@ -127,10 +127,10 @@ def minimax(board):
         return None
     # our moves / maximizing
     for child in dad.children:
-        
+        child.quality()
         if child.value == dad.target[dad.player]*100:
             return child.move
-        
+
         # opponent moves / minimizing
         if child.children:
             for grandchild in child.children:              
@@ -140,7 +140,11 @@ def minimax(board):
                         # opponent moves / minimizing
                         if minichild.children:
                             minichild.value = minimaxhelper(minichild).value
+                        else:
+                            minichild.quality()
                     grandchild.value = minimaxhelper(grandchild).value
+                else:
+                    grandchild.quality()
             child.value = minimaxhelper(child).value
     return minimaxhelper(dad).move
 
@@ -155,6 +159,8 @@ def minimaxhelper(parent):
     Returns:
         the best rated child object for the incoming Node
     """
+    if len(parent.children) == 0:
+        return parent.value
     if parent.player == X:
         return max(parent.children, key=lambda c: c.value)
     else: 
@@ -179,7 +185,7 @@ class Node:
         self.target = {X:1, O:-1}
         if move == None:
             self.tree()
-        self.quality()
+
         
     
     def tree(self):
@@ -204,6 +210,7 @@ class Node:
                                 for i, move in enumerate(minimoves):
                                     superchild = Node(result(minichild.board, move), move)
                                     minichild.children.append(superchild)
+                                    superchild.quality()
                                     
                                     if grandchild.player == X:
                                         if superchild.value <= grandchild.beta:
