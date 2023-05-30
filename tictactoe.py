@@ -162,8 +162,6 @@ def minimaxhelper(parent):
     else: 
         return min(parent.children, key=lambda c: c.value)
 
-
-
 class Node:
     """
     Represents a possible game State 
