@@ -132,12 +132,10 @@ def minimax(board):
             for grandchild in child.children:
                 # our moves
                 if grandchild.children:               
-                    """ 
                     for minichild in grandchild.children:
                         # opponent moves
                         if minichild.children:
                             minichild.value = minimaxhelper(minichild).value
-                    """
                     grandchild.value = minimaxhelper(grandchild).value
         if child.children:
             child.value = minimaxhelper(child).value
