@@ -107,18 +107,7 @@ def utility(board):
     result = winner(board)
     return rules[result]
 
-def timeit(func):
-    @wraps(func)
-    def timeit_wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        total_time = end_time - start_time
-        print(f'Function {func.__name__} Took {total_time:.4f} seconds')
-        return result
-    return timeit_wrapper
 
-@timeit
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
@@ -187,15 +176,18 @@ class Node:
         if possible
         """
         # MAX PLAYER
-        for move in actions(self.board):
-            
+        for move in (action := actions(self.board)):
+            if len(action) == 9:
+                self.children.append(Node(result(self.board, (1,1)), (1,1)))
+                self.children[0].quality()
+                break
             child = Node(result(self.board,move), move)
             self.children.append(child)
             # MIN PLAYER
             if child.terminal:
                 child.quality()
             else:
-                
+
                 for move in actions(child.board):
                     
                     grandchild = Node(result(child.board, move), move)
