@@ -180,7 +180,7 @@ class Node:
         if move == None:
             self.tree()
 
-        
+
     def tree(self):
         """
         generates 4 levels of ancestors for the parent node
@@ -188,19 +188,23 @@ class Node:
         """
         # MAX PLAYER
         for move in actions(self.board):
+            
             child = Node(result(self.board,move), move)
             self.children.append(child)
             # MIN PLAYER
             if child.terminal:
                 child.quality()
             else:
+                
                 for move in actions(child.board):
+                    
                     grandchild = Node(result(child.board, move), move)
                     child.children.append(grandchild)
                     # MAX PLAYER
                     if grandchild.terminal:
                         grandchild.quality()
                     else:
+                        
                         for i, move in enumerate(actions(grandchild.board)):
                             minichild = Node(result(grandchild.board, move), move)
                             grandchild.children.append(minichild)
@@ -208,27 +212,29 @@ class Node:
                             if minichild.terminal:
                                 minichild.quality()
                             else:
+                                
                                 for move in actions(minichild.board):
+                                    
                                     superchild = Node(result(minichild.board, move), move)
                                     minichild.children.append(superchild)
                                     superchild.quality()
-                                    # alphabeta pruning
                                     
+                                    # alphabeta pruning                                
                                     if grandchild.player == X:
                                         if superchild.value < minichild.beta:
-                                            minichild.beta = superchild.value            
+                                            minichild.beta = superchild.value  
+                                            if minichild.beta < grandchild.beta:
+                                                grandchild.beta = minichild.beta          
                                         if minichild.beta < grandchild.alpha and i != 0:
                                             break
                                     else:
                                         if superchild.value > minichild.alpha:
-                                            minichild.alpha = superchild.value            
+                                            minichild.alpha = superchild.value  
+                                            if minichild.alpha > grandchild.alpha:
+                                                grandchild.alpha = minichild.alpha          
                                         if minichild.alpha > grandchild.alpha and i != 0:
                                             break        
-                                                                
-                                if minichild.beta < grandchild.beta:
-                                    grandchild.beta = minichild.beta
-                                if minichild.alpha > grandchild.alpha:
-                                    grandchild.alpha = minichild.alpha
+
                                         
 
     def quality(self):  
