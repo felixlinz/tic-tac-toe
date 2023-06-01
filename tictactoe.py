@@ -122,7 +122,7 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    dad = Parent(board)
+    dad = Node(board)
     if len(dad.children) == 1:
         return dad.children[0].move
     elif dad.terminal == True:
@@ -166,6 +166,9 @@ class Node:
     Represents a possible game State 
     """
     def __init__(self, board, move = None):
+        self.alpha = -1000
+        self.beta = 1000
+        self.value = 0
         self.terminal = terminal(board)
         self.board = board
         self.move = move
@@ -173,11 +176,10 @@ class Node:
         self.player = player(self.board)
         self.utility = utility(self.board)
         self.target = {X:1, O:-1}
-                  
-class Parent(Node):
-    def __init__(self, board):
-        super().__init__(board)
-        self.tree()
+        if move == None:
+            self.tree()
+
+        
 
     def tree(self):
         """
@@ -185,14 +187,9 @@ class Parent(Node):
         if possible
         """
         # MAX PLAYER
-        for move in (action := actions(self.board)):
-            """
-            if len(action) == 9:
-                self.children.append(Child(result(self.board, (1,1)), (1,1)))
-                self.children[0].quality()
-                break
-            """
-            child = Child(result(self.board,move), move)
+        for move in actions(self.board):
+
+            child = Node(result(self.board,move), move)
             self.children.append(child)
             # MIN PLAYER
             if child.terminal:
@@ -200,53 +197,45 @@ class Parent(Node):
             else:
 
                 for move in actions(child.board):
-                    
-                    grandchild = Child(result(child.board, move), move)
+
+                    grandchild = Node(result(child.board, move), move)
                     child.children.append(grandchild)
                     # MAX PLAYER
                     if grandchild.terminal:
                         grandchild.quality()
                     else:
-                        
+
                         for i, move in enumerate(actions(grandchild.board)):
-                            minichild = Child(result(grandchild.board, move), move)
+                            minichild = Node(result(grandchild.board, move), move)
                             grandchild.children.append(minichild)
                             # MIN PLAYER
                             if minichild.terminal:
                                 minichild.quality()
                             else:
-                                
+
                                 for move in actions(minichild.board):
-                                    
-                                    superchild = Child(result(minichild.board, move), move)
+
+                                    superchild = Node(result(minichild.board, move), move)
                                     minichild.children.append(superchild)
                                     superchild.quality()
-                                    
+                                    # alphabeta pruning
+
                                     # alphabeta pruning                                
                                     if grandchild.player == X:
                                         if superchild.value < minichild.beta:
-                                            minichild.beta = superchild.value  
+                                            minichild.beta = superchild.value            
                                             if minichild.beta < grandchild.beta:
                                                 grandchild.beta = minichild.beta          
                                         if minichild.beta < grandchild.alpha and i != 0:
                                             break
                                     else:
                                         if superchild.value > minichild.alpha:
-                                            minichild.alpha = superchild.value  
+                                            minichild.alpha = superchild.value            
                                             if minichild.alpha > grandchild.alpha:
                                                 grandchild.alpha = minichild.alpha          
                                         if minichild.alpha > grandchild.alpha and i != 0:
-                                            break      
+                                            break        
 
-
-
-
-class Child(Node):
-    def __init__(self, board, move):
-        super().__init__(board, move)
-        self.alpha = -1000
-        self.beta = 1000
-        self.value = 0
 
     def quality(self):  
         """
@@ -266,7 +255,6 @@ class Child(Node):
         else:
             # assigns a value of - 100 for loosing state, 100 for winner, 0 for draw
             self.value = self.utility * 100
-
     def row_evaluation(self, row):
         """
         edits the value of its node based on the
