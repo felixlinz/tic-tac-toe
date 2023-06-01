@@ -226,17 +226,18 @@ class Parent(Node):
                                     if grandchild.player == X:
                                         if superchild.value < minichild.beta:
                                             minichild.beta = superchild.value  
-                                            if minichild.beta < grandchild.beta:
-                                                grandchild.beta = minichild.beta          
-                                        if minichild.beta < grandchild.alpha and i != 0:
-                                            break
+                                            if minichild.beta > grandchild.alpha:
+                                                grandchild.alpha = minichild.beta
+                                            if superchild.value < grandchild.alpha and i != 0:
+                                                break       
+    
                                     else:
                                         if superchild.value > minichild.alpha:
                                             minichild.alpha = superchild.value  
-                                            if minichild.alpha > grandchild.alpha:
-                                                grandchild.alpha = minichild.alpha          
-                                        if minichild.alpha > grandchild.alpha and i != 0:
-                                            break      
+                                            if minichild.alpha < grandchild.beta:
+                                                grandchild.beta = minichild.alpha
+                                            if superchild.value > grandchild.beta and i != 0:
+                                                break     
 
 
 
