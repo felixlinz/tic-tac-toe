@@ -148,9 +148,8 @@ def minimax(board):
 
 def minimaxhelper(parent):
     """
-
     Args:
-        dad (_Node_): takes a Node element representing a Game State that needs
+        takes a Node object representing a Game State that needs
         to have at least one possible Child
 
     Returns:
@@ -166,6 +165,9 @@ class Node:
     Represents a possible game State 
     """
     def __init__(self, board, move = None):
+        self.alpha = -1000
+        self.beta = 1000
+        self.value = 0
         self.terminal = terminal(board)
         self.board = board
         self.move = move
@@ -190,13 +192,8 @@ class Parent(Node):
         if possible
         """
         # MAX PLAYER
-        for move in (action := actions(self.board)):
-            """
-            if len(action) == 9:
-                self.children.append(Child(result(self.board, (1,1)), (1,1)))
-                self.children[0].quality()
-                break
-            """
+        for e, move in enumerate(actions(self.board)):
+
             child = Child(result(self.board,move), move)
             self.children.append(child)
             # MIN PLAYER
@@ -242,7 +239,7 @@ class Parent(Node):
                                             if minichild.alpha < grandchild.beta:
                                                 grandchild.beta = minichild.alpha
                                             if superchild.value > grandchild.beta and i != 0:
-                                                break     
+                                                break    
 
 class Child(Node):
     """
@@ -253,9 +250,7 @@ class Child(Node):
     """
     def __init__(self, board, move):
         super().__init__(board, move)
-        self.alpha = -1000
-        self.beta = 1000
-        self.value = 0
+        
 
     def quality(self):  
         """
